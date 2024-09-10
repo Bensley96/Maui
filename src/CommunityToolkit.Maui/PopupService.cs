@@ -36,7 +36,7 @@ public class PopupService : IPopupService
 							?? throw new InvalidOperationException("Could not locate IServiceProvider");
 	}
 
-	internal static void AddTransientPopupContent<TPopupContentView, TPopupViewModel>(IServiceCollection services)
+	internal static void AddTransientPopupContent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupContentView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(IServiceCollection services)
 		where TPopupContentView : View
 		where TPopupViewModel : INotifyPropertyChanged
 	{
