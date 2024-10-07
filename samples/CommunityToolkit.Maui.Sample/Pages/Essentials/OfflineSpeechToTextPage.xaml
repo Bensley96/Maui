@@ -19,7 +19,7 @@
             Padding="30,0">
 
             <Label
-                Text="SpeechToText allows the user to convert speech to text in real time"
+                Text="OfflineSpeechToText allows the user to convert speech to text in real time in offline"
                 HorizontalTextAlignment="Center"/>
 
             <Label
