@@ -263,7 +263,8 @@ public static class MauiProgram
 		services.AddSingleton<IFileSystem>(FileSystem.Current);
 		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
 		services.AddSingleton<IBadge>(Badge.Default);
-		services.AddSingleton<ISpeechToText>(SpeechToText.Default);
+		services.AddKeyedSingleton<ISpeechToText, SpeechToTextImplementation>("Online");
+		services.AddKeyedSingleton<ISpeechToText, OfflineSpeechToTextImplementation>("Offline");
 		services.AddSingleton<ITextToSpeech>(TextToSpeech.Default);
 	}
 
