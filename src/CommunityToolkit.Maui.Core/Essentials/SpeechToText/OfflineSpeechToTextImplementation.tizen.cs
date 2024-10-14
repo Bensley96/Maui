@@ -10,7 +10,6 @@ public sealed partial class OfflineSpeechToTextImplementation
 {
 	SttClient? sttClient;
 	TaskCompletionSource<bool>? tcsInitialize;
-	string defaultSttEngineLocale = "en_US";
 
 	/// <inheritdoc/>
 	public SpeechToTextState CurrentState => sttClient?.CurrentState is Tizen.Uix.Stt.State.Recording
@@ -129,7 +128,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		return tcsInitialize.Task.WaitAsync(cancellationToken);
 	}
 
-	async Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	async Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
 		await Initialize(cancellationToken);
 
@@ -137,11 +136,11 @@ public sealed partial class OfflineSpeechToTextImplementation
 		sttClient.RecognitionResult += OnRecognitionResult;
 		sttClient.StateChanged += OnStateChanged;
 
-		var recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial)
+		var recognitionType = options.ShouldReportPartialResults && sttClient.IsRecognitionTypeSupported(RecognitionType.Partial)
 			? RecognitionType.Partial
 			: RecognitionType.Free;
 
-		sttClient.Start(defaultSttEngineLocale, recognitionType);
+		sttClient.Start(options.Culture.Name, recognitionType);
 	}
 
 	Task InternalStopListeningAsync(CancellationToken cancellationToken)
