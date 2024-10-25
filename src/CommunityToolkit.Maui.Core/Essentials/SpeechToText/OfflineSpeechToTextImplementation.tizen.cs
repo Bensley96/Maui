@@ -41,7 +41,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		return ValueTask.CompletedTask;
 	}
 
-	void InternalStopListening(in SttClient? sttClient)
+	void InternalStopListening()
 	{
 		if (sttClient is null)
 		{
@@ -60,7 +60,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 	void OnErrorOccurred(object? sender, ErrorOccurredEventArgs e)
 	{
-		InternalStopListening(sttClient);
+		InternalStopListening();
 		OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception("STT failed - " + e.ErrorMessage)));
 	}
 
@@ -68,7 +68,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 	{
 		if (e.Result is ResultEvent.Error)
 		{
-			InternalStopListening(sttClient);
+			InternalStopListening();
 			OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception("Failure in speech engine - " + e.Message)));
 		}
 		else if (e.Result is ResultEvent.PartialResult)
@@ -80,7 +80,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		}
 		else
 		{
-			InternalStopListening(sttClient);
+			InternalStopListening();
 			OnRecognitionResultCompleted(SpeechToTextResult.Success(e.Data.ToString() ?? string.Empty));
 		}
 	}
@@ -91,7 +91,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 	}
 
 	[MemberNotNull(nameof(sttClient))]
-	void Initialize(CancellationToken cancellationToken)
+	void Initialize()
 	{
 		sttClient = new SttClient();
 		
@@ -105,7 +105,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		}
 	}
 
-	void InternalStartListenin(SpeechToTextOptions options)
+	void InternalStartListening(SpeechToTextOptions options)
 	{
 		Initialize();
 
