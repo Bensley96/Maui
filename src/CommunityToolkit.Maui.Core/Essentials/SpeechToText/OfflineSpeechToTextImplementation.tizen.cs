@@ -105,18 +105,18 @@ public sealed partial class OfflineSpeechToTextImplementation
 		}
 	}
 
-	void InternalStartListening(CultureInfo culture)
+	void InternalStartListenin(SpeechToTextOptions options)
 	{
-		Initialize(cancellationToken);
+		Initialize();
 
 		sttClient.ErrorOccurred += OnErrorOccurred;
 		sttClient.RecognitionResult += OnRecognitionResult;
 		sttClient.StateChanged += OnStateChanged;
 
-		var recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial)
+		var recognitionType = options.ShouldReportPartialResults && sttClient.IsRecognitionTypeSupported(RecognitionType.Partial)
 			? RecognitionType.Partial
 			: RecognitionType.Free;
 
-		sttClient.Start(defaultSttEngineLocale, recognitionType);
+		sttClient.Start(options.Culture.Name, recognitionType);
 	}
 }

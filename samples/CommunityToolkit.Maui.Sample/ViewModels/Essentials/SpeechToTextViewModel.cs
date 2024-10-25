@@ -31,7 +31,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
 	bool canStopListenExecute = false;
 
-	public SpeechToTextViewModel(ITextToSpeech textToSpeech, ISpeechToText speechToText)
+	public SpeechToTextViewModel(ITextToSpeech textToSpeech, [FromKeyedServices("Online")]ISpeechToText speechToText)
 	{
 		this.textToSpeech = textToSpeech;
 		this.speechToText = speechToText;
