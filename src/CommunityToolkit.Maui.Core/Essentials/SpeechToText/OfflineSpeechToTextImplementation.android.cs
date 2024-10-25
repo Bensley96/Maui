@@ -58,7 +58,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 	
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
 	[SupportedOSPlatform("Android33.0")]
-	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
+	void InternalStartListening(SpeechToTextOptions options)
 	{
 		if (!IsSpeechRecognitionAvailable())
 		{
@@ -79,19 +79,8 @@ public sealed partial class OfflineSpeechToTextImplementation
 		};
 		speechRecognizer.SetRecognitionListener(listener);
 		speechRecognizer.StartListening(recognizerIntent);
-
-		cancellationToken.ThrowIfCancellationRequested();
-
-		return Task.CompletedTask;
 	}
 
-	Task InternalStopListeningAsync(CancellationToken cancellationToken)
-	{
-		cancellationToken.ThrowIfCancellationRequested();
-		StopRecording();
-		return Task.CompletedTask;
-	}
-	
 	void HandleListenerError(SpeechRecognizerError error)
 	{
 		OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception($"Failure in speech engine - {error}")));
@@ -107,7 +96,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		OnRecognitionResultCompleted(SpeechToTextResult.Success(result));
 	}
 
-	void StopRecording()
+	void InternalStopListening()
 	{
 		speechRecognizer?.StopListening();
 		speechRecognizer?.Destroy();

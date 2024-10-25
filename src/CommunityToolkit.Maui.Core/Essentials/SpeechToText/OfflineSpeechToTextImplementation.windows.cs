@@ -27,16 +27,16 @@ public sealed partial class OfflineSpeechToTextImplementation
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
-		StopRecording();
+		InternalStopListening();
 
 		offlineSpeechRecognizer?.Dispose();
 		offlineSpeechRecognizer = null;
 		return ValueTask.CompletedTask;
 	}
 
-	async Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
+	void InternalStartListening(SpeechToTextOptions options)
 	{
-		await Initialize(options, cancellationToken);
+		Initialize(options);
 
 		offlineSpeechRecognizer.AudioStateChanged += OfflineSpeechRecognizer_StateChanged;
 		offlineSpeechRecognizer.LoadGrammar(new DictationGrammar());
@@ -76,13 +76,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		}
 	}
 
-	Task InternalStopListeningAsync(CancellationToken cancellationToken)
-	{
-		StopRecording();
-		return Task.CompletedTask;
-	}
-
-	void StopRecording()
+	void InternalStopListening()
 	{
 		try
 		{
@@ -102,13 +96,11 @@ public sealed partial class OfflineSpeechToTextImplementation
 	}
 
 	[MemberNotNull(nameof(recognitionText), nameof(offlineSpeechRecognizer), nameof(speechToTextOptions))]
-	Task Initialize(SpeechToTextOptions options, CancellationToken cancellationToken)
+	void Initialize(SpeechToTextOptions options)
 	{
 		speechToTextOptions = options;
 		recognitionText = string.Empty;
 		offlineSpeechRecognizer = new SpeechRecognitionEngine(options.Culture);
-		cancellationToken.ThrowIfCancellationRequested();
-		return Task.CompletedTask;
 	}
 
 	void OfflineSpeechRecognizer_StateChanged(object? sender, AudioStateChangedEventArgs e)

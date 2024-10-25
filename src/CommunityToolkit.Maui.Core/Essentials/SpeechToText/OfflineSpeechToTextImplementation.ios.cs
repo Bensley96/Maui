@@ -12,7 +12,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
 	[SupportedOSPlatform("ios13.0")]
 	[SupportedOSPlatform("maccatalyst")]
-	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
+	void InternalStartListening(SpeechToTextOptions options)
 	{
 		if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
 		{
@@ -48,14 +48,12 @@ public sealed partial class OfflineSpeechToTextImplementation
 			throw new ArgumentException("Error starting audio engine - " + error.LocalizedDescription);
 		}
 
-		cancellationToken.ThrowIfCancellationRequested();
-
 		var currentIndex = 0;
 		recognitionTask = speechRecognizer.GetRecognitionTask(liveSpeechRequest, (result, err) =>
 		{
 			if (err is not null)
 			{
-				StopRecording();
+				InternalStopListening();
 				OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception(err.LocalizedDescription)));
 			}
 			else
@@ -63,7 +61,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 				if (result.Final)
 				{
 					currentIndex = 0;
-					StopRecording();
+					InternalStopListening();
 					OnRecognitionResultCompleted(SpeechToTextResult.Success(result.BestTranscription.FormattedString));
 				}
 				else
@@ -82,7 +80,5 @@ public sealed partial class OfflineSpeechToTextImplementation
 				}
 			}
 		});
-
-		return Task.CompletedTask;
 	}
 }

@@ -9,7 +9,6 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class OfflineSpeechToTextImplementation
 {
 	SttClient? sttClient;
-	TaskCompletionSource<bool>? tcsInitialize;
 	string defaultSttEngineLocale = "en_US";
 
 	/// <inheritdoc/>
@@ -42,8 +41,13 @@ public sealed partial class OfflineSpeechToTextImplementation
 		return ValueTask.CompletedTask;
 	}
 
-	void StopRecording(in SttClient sttClient)
+	void InternalStopListening(in SttClient? sttClient)
 	{
+		if (sttClient is null)
+		{
+			return;
+		}
+
 		if (sttClient.CurrentState is Tizen.Uix.Stt.State.Recording)
 		{
 			sttClient.Stop();
@@ -56,11 +60,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 	void OnErrorOccurred(object? sender, ErrorOccurredEventArgs e)
 	{
-		if (sttClient is not null)
-		{
-			StopRecording(sttClient);
-		}
-
+		InternalStopListening(sttClient);
 		OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception("STT failed - " + e.ErrorMessage)));
 	}
 
@@ -68,11 +68,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 	{
 		if (e.Result is ResultEvent.Error)
 		{
-			if (sttClient is not null)
-			{
-				StopRecording(sttClient);
-			}
-
+			InternalStopListening(sttClient);
 			OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception("Failure in speech engine - " + e.Message)));
 		}
 		else if (e.Result is ResultEvent.PartialResult)
@@ -84,11 +80,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		}
 		else
 		{
-			if (sttClient is not null)
-			{
-				StopRecording(sttClient);
-			}
-
+			InternalStopListening(sttClient);
 			OnRecognitionResultCompleted(SpeechToTextResult.Success(e.Data.ToString() ?? string.Empty));
 		}
 	}
@@ -99,24 +91,10 @@ public sealed partial class OfflineSpeechToTextImplementation
 	}
 
 	[MemberNotNull(nameof(sttClient))]
-	Task<bool> Initialize(CancellationToken cancellationToken)
+	void Initialize(CancellationToken cancellationToken)
 	{
-		if (tcsInitialize != null && sttClient != null)
-		{
-			return tcsInitialize.Task.WaitAsync(cancellationToken);
-		}
-
-		tcsInitialize = new TaskCompletionSource<bool>();
 		sttClient = new SttClient();
-
-		sttClient.StateChanged += (s, e) =>
-		{
-			if (e.Current == Tizen.Uix.Stt.State.Ready)
-			{
-				tcsInitialize.TrySetResult(true);
-			}
-		};
-
+		
 		try
 		{
 			sttClient.Prepare();
@@ -125,13 +103,11 @@ public sealed partial class OfflineSpeechToTextImplementation
 		{
 			OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception("STT is not available - " + ex)));
 		}
-
-		return tcsInitialize.Task.WaitAsync(cancellationToken);
 	}
 
-	async Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	void InternalStartListening(CultureInfo culture)
 	{
-		await Initialize(cancellationToken);
+		Initialize(cancellationToken);
 
 		sttClient.ErrorOccurred += OnErrorOccurred;
 		sttClient.RecognitionResult += OnRecognitionResult;
@@ -142,17 +118,5 @@ public sealed partial class OfflineSpeechToTextImplementation
 			: RecognitionType.Free;
 
 		sttClient.Start(defaultSttEngineLocale, recognitionType);
-	}
-
-	Task InternalStopListeningAsync(CancellationToken cancellationToken)
-	{
-		cancellationToken.ThrowIfCancellationRequested();
-
-		if (sttClient is not null)
-		{
-			StopRecording(sttClient);
-		}
-
-		return Task.CompletedTask;
 	}
 }

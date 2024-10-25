@@ -11,8 +11,8 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 public partial class OfflineSpeechToTextViewModel : BaseViewModel
 {
 	const string defaultLanguage = "en-US";
-	const string defaultLanguage_android = "en";
-	const string defaultLanguage_tizen = "en_US";
+	const string defaultLanguageAndroid = "en";
+	const string defaultLanguageTizen = "en_US";
 
 	readonly ITextToSpeech textToSpeech;
 	readonly ISpeechToText speechToText;
@@ -29,7 +29,7 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	bool canStartListenExecute = true;
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
-	bool canStopListenExecute = false;
+	bool canStopListenExecute;
 
 	public OfflineSpeechToTextViewModel(ITextToSpeech textToSpeech)
 	{
@@ -55,7 +55,7 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 			Locales.Add(locale);
 		}
 
-		CurrentLocale = Locales.FirstOrDefault(x => x.Language is defaultLanguage or defaultLanguage_android or defaultLanguage_tizen) ?? Locales.FirstOrDefault();
+		CurrentLocale = Locales.FirstOrDefault(x => x.Language is defaultLanguage or defaultLanguageAndroid or defaultLanguageTizen) ?? Locales.FirstOrDefault();
 	}
 
 	[RelayCommand]
@@ -90,12 +90,6 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 		if (!isGranted)
 		{
 			await Toast.Make("Permission not granted").Show(CancellationToken.None);
-			return;
-		}
-
-		if (Connectivity.NetworkAccess != NetworkAccess.Internet)
-		{
-			await Toast.Make("Internet connection is required").Show(CancellationToken.None);
 			return;
 		}
 

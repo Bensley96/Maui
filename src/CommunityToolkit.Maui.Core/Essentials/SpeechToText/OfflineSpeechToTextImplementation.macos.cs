@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class OfflineSpeechToTextImplementation
 {
 	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
-	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
+	void InternalStartListening(SpeechToTextOptions options)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
 		speechRecognizer.SupportsOnDeviceRecognition = true;
@@ -59,14 +59,12 @@ public sealed partial class OfflineSpeechToTextImplementation
 			throw new Exception(error.LocalizedDescription);
 		}
 
-		cancellationToken.ThrowIfCancellationRequested();
-
 		var currentIndex = 0;
 		recognitionTask = speechRecognizer.GetRecognitionTask(liveSpeechRequest, (result, err) =>
 		{
 			if (err is not null)
 			{
-				StopRecording();
+				InternalStopListening();
 				OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception(err.LocalizedDescription)));
 			}
 			else
@@ -74,7 +72,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 				if (result.Final)
 				{
 					currentIndex = 0;
-					StopRecording();
+					InternalStopListening();
 					OnRecognitionResultCompleted(SpeechToTextResult.Success(result.BestTranscription.FormattedString));
 				}
 				else
@@ -93,7 +91,5 @@ public sealed partial class OfflineSpeechToTextImplementation
 				}
 			}
 		});
-
-		return Task.CompletedTask;
 	}
 }
