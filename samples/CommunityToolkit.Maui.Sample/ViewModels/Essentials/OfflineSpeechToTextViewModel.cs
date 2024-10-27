@@ -34,6 +34,7 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	public OfflineSpeechToTextViewModel(ITextToSpeech textToSpeech)
 	{
 		this.textToSpeech = textToSpeech;
+		// For demo purposes. You can resolve dependency from the DI container,
 		this.speechToText = OfflineSpeechToText.Default;
 
 		Locales.CollectionChanged += HandleLocalesCollectionChanged;
