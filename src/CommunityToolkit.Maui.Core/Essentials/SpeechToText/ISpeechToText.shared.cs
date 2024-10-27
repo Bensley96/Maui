@@ -33,7 +33,7 @@ public interface ISpeechToText : IAsyncDisposable
 	/// <remarks>
 	/// Real time speech recognition results will be surfaced via <see cref="RecognitionResultUpdated"/> and <see cref="RecognitionResultCompleted"/>
 	/// </remarks>
-	/// <param name="options"><see cref="SpeechToTextOptions"/></param>
+	/// <param name="options">The <see cref="SpeechToTextOptions"/> used to customize how the speech will be detected and converted to text.</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default);
 
