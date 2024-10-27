@@ -34,7 +34,7 @@ public interface ISpeechToText : IAsyncDisposable
 	/// Real time speech recognition results will be surfaced via <see cref="RecognitionResultUpdated"/> and <see cref="RecognitionResultCompleted"/>
 	/// </remarks>
 	/// <param name="options">The <see cref="SpeechToTextOptions"/> used to customize how the speech will be detected and converted to text.</param>
-	/// <param name="cancellationToken">A <see cref="CancellationToken"/> that provides the ability to cancel the starting process. Note that listening has started then you can only stop listening by calling <see cref="StopListening"/>.</param>
+	/// <param name="cancellationToken">A <see cref="CancellationToken"/> that provides the ability to cancel the starting process. Note that listening has started then you can only stop listening by calling <see cref="StopListenAsync"/>.</param>
 	Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default);
 
 	/// <summary>
