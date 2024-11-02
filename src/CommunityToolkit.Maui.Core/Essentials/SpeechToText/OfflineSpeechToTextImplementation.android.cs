@@ -70,7 +70,6 @@ public sealed partial class OfflineSpeechToTextImplementation
 		speechRecognizer = SpeechRecognizer.CreateOnDeviceSpeechRecognizer(Application.Context);
 		speechRecognizer.TriggerModelDownload(recognizerIntent);
 
-
 		listener = new SpeechRecognitionListener(this)
 		{
 			Error = HandleListenerError,

@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Globalization;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Media;
@@ -10,83 +8,25 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 
 public partial class OfflineSpeechToTextViewModel : BaseViewModel
 {
-	const string defaultLanguage = "en-US";
-	const string defaultLanguageAndroid = "en";
-	const string defaultLanguageTizen = "en_US";
-
-	readonly ITextToSpeech textToSpeech;
 	readonly ISpeechToText speechToText;
-
-	[ObservableProperty]
-	Locale? currentLocale;
 
 	public SpeechToTextState? State => speechToText.CurrentState;
 
 	[ObservableProperty]
 	string? recognitionText = "Welcome to .NET MAUI Community Toolkit!";
 
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartListenCommand))]
-	bool canStartListenExecute = true;
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
-	bool canStopListenExecute;
-
-	public OfflineSpeechToTextViewModel(ITextToSpeech textToSpeech)
+	public OfflineSpeechToTextViewModel()
 	{
-		this.textToSpeech = textToSpeech;
 		// For demo purposes. You can resolve dependency from the DI container,
-		this.speechToText = OfflineSpeechToText.Default;
+		speechToText = OfflineSpeechToText.Default;
 
-		Locales.CollectionChanged += HandleLocalesCollectionChanged;
-		this.speechToText.StateChanged += HandleSpeechToTextStateChanged;
-		this.speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
-	}
-
-	public ObservableCollection<Locale> Locales { get; } = [];
-
-	[RelayCommand]
-	async Task SetLocales(CancellationToken token)
-	{
-		Locales.Clear();
-
-		var locales = await textToSpeech.GetLocalesAsync().WaitAsync(token);
-
-		foreach (var locale in locales.OrderBy(x => x.Language).ThenBy(x => x.Name))
-		{
-			Locales.Add(locale);
-		}
-
-		CurrentLocale = Locales.FirstOrDefault(x => x.Language is defaultLanguage or defaultLanguageAndroid or defaultLanguageTizen) ?? Locales.FirstOrDefault();
+		speechToText.StateChanged += HandleSpeechToTextStateChanged;
+		speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 	}
 
 	[RelayCommand]
-	async Task Play(CancellationToken cancellationToken)
-	{
-		var timeoutCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-
-		try
-		{
-			await textToSpeech.SpeakAsync(RecognitionText ?? "Welcome to .NET MAUI Community Toolkit!", new()
-			{
-				Locale = CurrentLocale,
-				Pitch = 1,
-				Volume = 1
-			}, cancellationToken).WaitAsync(timeoutCancellationTokenSource.Token);
-		}
-		catch (TaskCanceledException)
-		{
-			await Toast.Make("Playback automatically stopped after 5 seconds").Show(cancellationToken);
-#if IOS
-			await Toast.Make("If you did not hear playback, test again on a physical iOS device").Show(cancellationToken);
-#endif
-		}
-	}
-
-	[RelayCommand(CanExecute = nameof(CanStartListenExecute))]
 	async Task StartListen()
 	{
-		CanStartListenExecute = false;
-
 		var isGranted = await speechToText.RequestPermissions(CancellationToken.None);
 		if (!isGranted)
 		{
@@ -100,9 +40,9 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 
 		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
 
-		await speechToText.StartListenAsync(new SpeechToTextOptions()
+		await speechToText.StartListenAsync(new SpeechToTextOptions
 		{
-			Culture = CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
+			Culture = CultureInfo.CurrentCulture,
 			ShouldReportPartialResults = true
 		}, CancellationToken.None);
 
@@ -112,12 +52,9 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 		}
 	}
 
-	[RelayCommand(CanExecute = nameof(CanStopListenExecute))]
+	[RelayCommand]
 	Task StopListen()
 	{
-		CanStartListenExecute = true;
-		CanStopListenExecute = false;
-
 		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
 
 		return speechToText.StopListenAsync(CancellationToken.None);
@@ -136,10 +73,5 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	void HandleSpeechToTextStateChanged(object? sender, SpeechToTextStateChangedEventArgs e)
 	{
 		OnPropertyChanged(nameof(State));
-	}
-
-	void HandleLocalesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-	{
-		OnPropertyChanged(nameof(CurrentLocale));
 	}
 }

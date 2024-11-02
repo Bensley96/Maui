@@ -9,27 +9,14 @@
                 x:DataType="vm:OfflineSpeechToTextViewModel"
                 Title="OfflineSpeechToText">
 
-    <ContentPage.Resources>
-        <essentials:PickerLocaleDisplayConverter x:Key="PickerLocaleDisplayConverter" />
-    </ContentPage.Resources>
-
     <ScrollView>
         <VerticalStackLayout
             Spacing="20"
             Padding="30,0">
 
             <Label
-                Text="OfflineSpeechToText allows the user to convert speech to text in real time in offline"
+                Text="OfflineSpeechToText allows the user to convert speech to text in real time in offline."
                 HorizontalTextAlignment="Center"/>
-
-            <Label
-                Text="Locale"
-                FontAttributes="Bold"/>
-
-            <Picker
-                ItemsSource="{Binding Locales}"
-                SelectedItem="{Binding CurrentLocale}"
-                ItemDisplayBinding="{Binding ., Converter={StaticResource PickerLocaleDisplayConverter}}"/>
 
             <Label
                 Text="State"
@@ -52,11 +39,6 @@
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
                 MinimumHeightRequest="100" />
-
-            <Button
-                Text="Play"
-                Command="{Binding PlayCommand}"
-                HorizontalOptions="Center" />
 
             <Border
                 StrokeThickness="2"
